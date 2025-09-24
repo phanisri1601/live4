@@ -28,25 +28,6 @@ except Exception:
     fb_credentials = None
     fb_db = None
 
-# Google Cloud Secret Manager
-try:
-    from google.cloud import secretmanager
-except Exception:
-    secretmanager = None
-
-def get_secret(secret_name):
-    """Get secret from Google Cloud Secret Manager"""
-    try:
-        if secretmanager is None:
-            return None
-        client = secretmanager.SecretManagerServiceClient()
-        name = f"projects/livecode-35eda/secrets/{secret_name}/versions/latest"
-        response = client.access_secret_version(request={"name": name})
-        return response.payload.data.decode("UTF-8")
-    except Exception as e:
-        logger.error(f"Error accessing secret {secret_name}: {e}")
-        return None
-
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -72,56 +53,36 @@ rtdb_available = False
 try:
     if firebase_admin is not None:
         # Get database URL from environment or use your Firebase project
-        # Default to your Firebase Realtime Database URL; can be overridden via FIREBASE_DB_URL
         rtdb_url = os.getenv('FIREBASE_DB_URL', "https://livecode-35eda-default-rtdb.firebaseio.com/")
 
         try:
             firebase_admin.get_app()
         except ValueError:
-            # Try to get Firebase credentials from Secret Manager first
-            firebase_key_json = get_secret("firebase-service-account")
-            if firebase_key_json:
+            cred_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+            base_dir = os.path.dirname(__file__)
+            # Resolve absolute and local file options
+            candidate_paths = []
+            # Root-level credentials.json (new key)
+            candidate_paths.append(os.path.join(base_dir, 'livecode-35eda-firebase-adminsdk-fbsvc-c1c1d124c8.json'))
+            if cred_path:
+                candidate_paths.append(cred_path)
+                candidate_paths.append(os.path.join(base_dir, cred_path))
+            # Preferred new service account file (user-provided)
+            candidate_paths.append(os.path.join(base_dir, 'livecode-35eda-firebase-adminsdk-fbsvc-4549eea2ad.json'))
+            # Newly generated service account file (user-provided)
+            candidate_paths.append(os.path.join(base_dir, 'livecode-35eda-firebase-adminsdk-fbsvc-a52c90eca7.json'))
+            
+
+            cred = None
+            for cpath in candidate_paths:
                 try:
-                    import json
-                    cred = fb_credentials.Certificate(json.loads(firebase_key_json))
-                    logger.info('Initializing Firebase Admin with Secret Manager credentials')
-                except Exception as e:
-                    logger.warning(f"Failed to load Firebase credentials from Secret Manager: {e}")
-                    cred = None
-            else:
-                cred = None
-            
-            # Fallback to file-based credentials
+                    if cpath and os.path.exists(cpath):
+                        cred = fb_credentials.Certificate(cpath)
+                        break
+                except Exception:
+                    pass
             if cred is None:
-                cred_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-                base_dir = os.path.dirname(__file__)
-                # Resolve absolute and local file options. Prefer explicit env var first.
-                candidate_paths = []
-                if cred_path:
-                    candidate_paths.append(cred_path)
-                    candidate_paths.append(os.path.join(base_dir, cred_path))
-                # Then try bundled/checked-in keys (may be outdated)
-                candidate_paths.append(os.path.join(base_dir, 'livecode-35eda-firebase-adminsdk-fbsvc-c1c1d124c8.json'))
-                candidate_paths.append(os.path.join(base_dir, 'livecode-35eda-firebase-adminsdk-fbsvc-4549eea2ad.json'))
-                # Your newly generated private key
-                candidate_paths.append(os.path.join(base_dir, 'livecode-35eda-firebase-adminsdk-fbsvc-541743de2c.json'))
-                
-                chosen_cpath = None
-                for cpath in candidate_paths:
-                    try:
-                        if cpath and os.path.exists(cpath):
-                            cred = fb_credentials.Certificate(cpath)
-                            chosen_cpath = cpath
-                            break
-                    except Exception as _e:
-                        logger.warning(f"Failed to load Firebase credentials from {cpath}: {_e}")
-                
-                if cred is None:
-                    logger.info('Falling back to Application Default Credentials for Firebase Admin')
-                    cred = fb_credentials.ApplicationDefault()
-                else:
-                    logger.info(f'Initializing Firebase Admin with credentials file: {chosen_cpath}')
-            
+                cred = fb_credentials.ApplicationDefault()
             firebase_admin.initialize_app(cred, options={'databaseURL': rtdb_url})
         
         # Check RTDB availability
@@ -2738,24 +2699,11 @@ def _otp_hash(code: str) -> str:
 def _twilio_client():
     try:
         from twilio.rest import Client  # type: ignore
-        # Prefer API Key auth if provided; else fall back to Account SID/Auth Token
-        account_sid = (os.getenv('TWILIO_ACCOUNT_SID') or '').strip()
-        auth_token = (os.getenv('TWILIO_AUTH_TOKEN') or '').strip()
-        api_key = (os.getenv('TWILIO_API_KEY') or '').strip()
-        api_secret = (os.getenv('TWILIO_API_SECRET') or '').strip()
-
-        if api_key and api_secret and account_sid:
-            return Client(api_key, api_secret, account_sid)
-
-        if not account_sid or not auth_token:
-            missing = []
-            if not account_sid:
-                missing.append('TWILIO_ACCOUNT_SID')
-            if not auth_token:
-                missing.append('TWILIO_AUTH_TOKEN')
-            logger.warning(f"Twilio not configured; missing env: {', '.join(missing)}")
+        sid = os.getenv('TWILIO_ACCOUNT_SID')
+        token = os.getenv('TWILIO_AUTH_TOKEN')
+        if not sid or not token:
             return None
-        return Client(account_sid, auth_token)
+        return Client(sid, token)
     except Exception as _e:
         logger.warning(f"Twilio client unavailable: {_e}")
         return None
@@ -2788,71 +2736,29 @@ def auth_send_otp():
             return jsonify({'success': False, 'message': 'Database not available'}), 503
 
         # Send SMS via Twilio
-        client = _twilio_client()
-        from_number = (os.getenv('TWILIO_NUMBER') or '').strip()
-        messaging_service_sid = (os.getenv('TWILIO_MESSAGING_SERVICE_SID') or '').strip()
-
-        if not client:
-            return jsonify({'success': False, 'message': 'SMS not configured: missing Twilio credentials'}), 503
-        if not from_number and not messaging_service_sid:
-            return jsonify({'success': False, 'message': 'SMS not configured: set TWILIO_NUMBER or TWILIO_MESSAGING_SERVICE_SID'}), 503
-
+        sent = False
         try:
-            create_kwargs = {
-                'body': f"Your IM Solutions verification code is {otp_code}. It expires in 5 minutes.",
-                'to': phone_norm,
-            }
-            if from_number:
-                create_kwargs['from_'] = from_number
-            if messaging_service_sid and 'from_' not in create_kwargs:
-                create_kwargs['messaging_service_sid'] = messaging_service_sid
-
-            client.messages.create(**create_kwargs)
-            return jsonify({'success': True, 'sent': True})
+            client = _twilio_client()
+            from_number = os.getenv('TWILIO_NUMBER')
+            messaging_service_sid = os.getenv('TWILIO_MESSAGING_SERVICE_SID')
+            if client and (from_number or messaging_service_sid):
+                create_kwargs = {
+                    'body': f"Your IM Solutions verification code is {otp_code}. It expires in 5 minutes.",
+                    'to': phone_norm,
+                }
+                if from_number:
+                    create_kwargs['from_'] = from_number
+                if messaging_service_sid and 'from_' not in create_kwargs:
+                    create_kwargs['messaging_service_sid'] = messaging_service_sid
+                client.messages.create(**create_kwargs)
+                sent = True
         except Exception as e:
-            # Try to extract Twilio error code/message if available
-            err_message = str(e)
-            try:
-                from twilio.base.exceptions import TwilioRestException  # type: ignore
-                if isinstance(e, TwilioRestException):
-                    err_message = f"Twilio error {e.code}: {e.msg}"
-            except Exception:
-                pass
-            logger.warning(f"Failed to send OTP SMS: {err_message}")
-            return jsonify({'success': False, 'message': err_message}), 502
+            logger.warning(f"Failed to send OTP SMS: {e}")
 
+        return jsonify({'success': True, 'sent': sent})
     except Exception as e:
         logger.error(f"send_otp error: {e}")
         return jsonify({'success': False, 'message': 'Failed to send OTP'}), 500
-
-@app.route('/debug/twilio', methods=['GET'])
-def debug_twilio():
-    try:
-        info = {}
-        info['TWILIO_ACCOUNT_SID_present'] = bool((os.getenv('TWILIO_ACCOUNT_SID') or '').strip())
-        info['TWILIO_AUTH_TOKEN_present'] = bool((os.getenv('TWILIO_AUTH_TOKEN') or '').strip())
-        info['TWILIO_API_KEY_present'] = bool((os.getenv('TWILIO_API_KEY') or '').strip())
-        info['TWILIO_API_SECRET_present'] = bool((os.getenv('TWILIO_API_SECRET') or '').strip())
-        info['TWILIO_NUMBER_present'] = bool((os.getenv('TWILIO_NUMBER') or '').strip())
-        info['TWILIO_MESSAGING_SERVICE_SID_present'] = bool((os.getenv('TWILIO_MESSAGING_SERVICE_SID') or '').strip())
-
-        client = _twilio_client()
-        if not client:
-            return jsonify({'success': False, 'message': 'Twilio client not configured', 'info': info}), 503
-
-        # Minimal auth probe: fetch account
-        try:
-            account = client.api.accounts(client.username if hasattr(client, 'username') else os.getenv('TWILIO_ACCOUNT_SID')).fetch()
-            info['account_sid'] = getattr(account, 'sid', None)
-            info['account_status'] = getattr(account, 'status', None)
-            info['account_type'] = getattr(account, 'type', None)
-        except Exception as e:
-            return jsonify({'success': False, 'message': f'Twilio auth failed: {e}', 'info': info}), 502
-
-        return jsonify({'success': True, 'info': info})
-    except Exception as e:
-        logger.error(f"debug_twilio error: {e}")
-        return jsonify({'success': False, 'message': 'Failed to debug Twilio'}), 500
 
 @app.route('/auth/signup', methods=['POST'])
 def auth_signup():
@@ -2968,13 +2874,8 @@ def auth_login():
                 return jsonify({'success': False, 'message': 'Database not available'}), 503
                 
         except Exception as e:
-            logger.error(f"Auth DB access failed: {e}", exc_info=True)
-            message = 'Authentication failed'
-            status = 500
-            if 'invalid_grant' in str(e) or 'Invalid JWT Signature' in str(e):
-                message = 'Server credentials invalid or clock skew. Please contact administrator.'
-                status = 503
-            return jsonify({'success': False, 'message': message}), status
+            logger.error(f"Auth DB access failed: {e}")
+            return jsonify({'success': False, 'message': 'Authentication failed'}), 500
 
         token = _issue_token(username)
         user_role = 'user'
@@ -3601,14 +3502,6 @@ def delete_subadmin(username):
 
 if __name__ == '__main__':
     # Load sample knowledge base and create default user for testing
-    # Wrap in application context to avoid context errors on startup
-    try:
-        with app.app_context():
-            load_sample_knowledge_base()
-            create_default_user()
-    except Exception as e:
-        logger.error(f"Startup initialization error: {e}")
-    
-    # For Cloud Run, use PORT environment variable
-    port = int(os.environ.get('PORT', 5001))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    load_sample_knowledge_base()
+    create_default_user()
+    app.run(debug=True, port=5001) 

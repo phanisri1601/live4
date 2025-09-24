@@ -1,118 +1,206 @@
-# LiveCode Chatbot Application
+# AI Chatbot System
 
-A Flask-based chatbot application with Firebase integration, Twilio SMS support, and Google Cloud deployment capabilities.
+A complete AI-powered chatbot system with admin dashboard and embeddable widget functionality.
 
 ## Features
 
-- **AI Chatbot**: Powered by Google Gemini AI
-- **User Authentication**: JWT-based auth with OTP verification
-- **SMS Integration**: Twilio for OTP delivery
-- **Database**: Firebase Realtime Database
-- **Cloud Ready**: Deployable to Google Cloud Run/App Engine
+- 🤖 **AI-Powered Responses**: Uses Google Gemini AI for intelligent conversations
+- 📊 **Admin Dashboard**: Comprehensive dashboard for managing leads, appointments, and conversations
+- 🎨 **Customizable Widget**: Embeddable chatbot widget for any website
+- 📚 **Knowledge Base**: Upload and manage company information to train the chatbot
+- 🔐 **User Management**: Role-based access control (Admin/Sub-Admin)
+- 📈 **Analytics**: Real-time data visualization and reporting
+- 🔄 **Real-time Updates**: Firebase integration for live data synchronization
 
-## Local Development
+## Quick Start
 
-1. **Install Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+### 1. Setup the Chatbot Server
 
-2. **Set Environment Variables**:
-   Create a `.env` file with:
-   ```
-   FIREBASE_DB_URL=https://livecode-35eda-default-rtdb.firebaseio.com/
-   JWT_SECRET=your-jwt-secret
-   GEMINI_API_KEY=your-gemini-api-key
-   TWILIO_ACCOUNT_SID=your-twilio-sid
-   TWILIO_AUTH_TOKEN=your-twilio-token
-   TWILIO_NUMBER=your-twilio-number
-   ```
+```bash
+cd chatbotc
+pip install -r requirements.txt
+python app.py
+```
 
-3. **Run the Application**:
-   ```bash
-   python app.py
-   ```
+The chatbot server will run on `http://localhost:5001`
 
-## Google Cloud Deployment
+### 2. Setup the Admin Dashboard
 
-### Option 1: Cloud Run (Recommended)
+```bash
+cd scratchdash
+npm install
+npm start
+```
 
-1. **Enable APIs**:
-   - Cloud Run API
-   - Cloud Build API
-   - Secret Manager API
+The dashboard will run on `http://localhost:3000`
 
-2. **Deploy from GitHub**:
-   - Connect your GitHub repository
-   - Deploy using the provided `Dockerfile`
-   - Set environment variables in Cloud Run console
+### 3. Configure Firebase
 
-3. **Set up Secrets**:
-   - Upload Firebase service account key to Secret Manager
-   - Grant access to Cloud Run service account
+1. Copy your Firebase service account key to both projects
+2. Update the Firebase configuration in both applications
+3. Ensure Firebase Realtime Database is enabled
 
-### Option 2: App Engine
+## Usage
 
-1. **Deploy using app.yaml**:
-   ```bash
-   gcloud app deploy
-   ```
+### Admin Dashboard
 
-2. **Set environment variables** in `app.yaml`
+1. **Login**: Use `admin` / `password` for initial login
+2. **Upload Knowledge Base**: Go to Knowledge Base section and upload a JSON file with your company information
+3. **Manage Users**: Create sub-admin users with specific permissions
+4. **View Analytics**: Monitor leads, appointments, and conversations in real-time
+
+### Embedding the Chatbot
+
+Add this script tag to any website:
+
+```html
+<script src="http://localhost:5001/static/chatbot-widget.js"></script>
+```
+
+Optional customization:
+
+```html
+<script>
+ChatbotWidget.updateConfig({
+    primaryColor: '#your-color',
+    secondaryColor: '#your-secondary-color',
+    position: 'bottom-right' // or 'bottom-left', 'top-right', 'top-left'
+});
+</script>
+```
+
+### Knowledge Base Format
+
+Upload a JSON file with your company information. Use the sample format:
+
+```json
+{
+    "company_info": {
+        "name": "Your Company Name",
+        "type": "Your Business Type",
+        "location": "Your City, Country"
+    },
+    "services": {
+        "online_services": ["Service 1", "Service 2"],
+        "offline_services": ["Service 3", "Service 4"]
+    },
+    "common_questions": {
+        "what are your services": "We offer...",
+        "how can i contact you": "You can reach us..."
+    }
+}
+```
 
 ## API Endpoints
 
-- `POST /auth/send_otp` - Send OTP via SMS
-- `POST /auth/signup` - User registration
-- `POST /auth/login` - User login
-- `POST /auth/verify` - Verify JWT token
-- `GET /debug/twilio` - Debug Twilio configuration
+### Chatbot Server (`http://localhost:5001`)
 
-## Project Structure
+- `POST /send_message` - Send message to chatbot
+- `POST /upload_knowledge_base` - Upload knowledge base JSON
+- `GET /get_knowledge_base` - Get current knowledge base
+- `POST /reload_knowledge_base` - Reload knowledge base
+- `POST /create_lead` - Create new lead
+- `POST /schedule_appointment` - Schedule appointment
+- `GET /get_appointments` - Get appointments
+- `POST /cancel_appointment` - Cancel appointment
+
+## Configuration
+
+### Environment Variables
+
+Create a `.env` file in the `chatbotc` directory:
 
 ```
+GEMINI_API_KEY=your_gemini_api_key
+FIREBASE_DB_URL=your_firebase_database_url
+GOOGLE_APPLICATION_CREDENTIALS=path_to_service_account_key.json
+```
+
+### Widget Customization
+
+The chatbot widget can be customized with the following options:
+
+```javascript
+ChatbotWidget.updateConfig({
+    apiUrl: 'http://localhost:5001', // Your chatbot server URL
+    position: 'bottom-right', // Widget position
+    theme: 'default', // Theme (default, dark, light)
+    primaryColor: '#667eea', // Primary color
+    secondaryColor: '#764ba2' // Secondary color
+});
+```
+
+## File Structure
+
+```
+chatbotc/
 ├── app.py                 # Main Flask application
 ├── requirements.txt       # Python dependencies
-├── Dockerfile            # Container configuration
-├── app.yaml              # App Engine configuration
-├── cloudbuild.yaml       # Cloud Build configuration
-├── templates/            # HTML templates
-├── static/              # Static assets
-└── README.md            # This file
+├── templates/
+│   └── index.html        # Chatbot interface
+├── static/
+│   ├── chatbot-widget.js # Embeddable widget script
+│   ├── example.html      # Example website
+│   └── sample-knowledge-base.json # Knowledge base template
+└── README.md
+
+scratchdash/
+├── src/
+│   ├── App.js           # Main React application
+│   ├── components/
+│   │   ├── Dashboard.js # Admin dashboard
+│   │   └── Login.js     # Login component
+│   ├── firebase.js      # Firebase configuration
+│   └── gemini.js        # AI integration
+├── package.json         # Node.js dependencies
+└── README.md
 ```
 
-## Environment Variables
+## Deployment
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `FIREBASE_DB_URL` | Firebase Realtime Database URL | Yes |
-| `JWT_SECRET` | Secret for JWT token signing | Yes |
-| `GEMINI_API_KEY` | Google Gemini API key | Yes |
-| `TWILIO_ACCOUNT_SID` | Twilio Account SID | Yes |
-| `TWILIO_AUTH_TOKEN` | Twilio Auth Token | Yes |
-| `TWILIO_NUMBER` | Twilio phone number | Yes |
+### Production Setup
 
-## Security Notes
+1. **Update API URLs**: Change `localhost:5000` to your production server URL in:
+   - `scratchdash/src/components/Dashboard.js`
+   - `chatbotc/static/chatbot-widget.js`
 
-- Never commit `.env` files or service account keys
-- Use Secret Manager for production secrets
-- Enable HTTPS in production
-- Set up proper CORS policies
-- Implement rate limiting for production use
+2. **Environment Variables**: Set production environment variables
+
+3. **Firebase Security**: Configure Firebase security rules for production
+
+4. **HTTPS**: Ensure all communications use HTTPS in production
+
+### Docker Deployment (Optional)
+
+Create `Dockerfile` for the chatbot server:
+
+```dockerfile
+FROM python:3.9-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+EXPOSE 5000
+CMD ["python", "app.py"]
+```
 
 ## Troubleshooting
 
-### Twilio Error 20003
-- Verify Account SID and Auth Token are correct
-- Ensure phone number belongs to the same account
-- Check if using live vs test credentials
+### Common Issues
 
-### Firebase Connection Issues
-- Verify service account key is valid
-- Check database URL is correct
-- Ensure proper IAM permissions
+1. **Firebase Connection**: Ensure Firebase credentials are correct and database is enabled
+2. **CORS Issues**: Add CORS headers if embedding on different domains
+3. **API Key**: Verify Gemini API key is valid and has proper permissions
+4. **Port Conflicts**: Ensure ports 5000 and 3000 are available
 
-### Deployment Issues
-- Check Cloud Build logs
-- Verify all environment variables are set
-- Ensure Dockerfile builds successfully
+### Support
+
+For issues and questions:
+1. Check the console logs for error messages
+2. Verify all environment variables are set correctly
+3. Ensure Firebase database has proper read/write permissions
+4. Test API endpoints directly using tools like Postman
+
+## License
+
+This project is open source and available under the MIT License.

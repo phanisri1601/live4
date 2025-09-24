@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=C:\Users\G V Rakshitha\Downloads\live_code3\venv
+set VIRTUAL_ENV=C:\Users\Sreenivasa\Desktop\dummy chatbot - Copy\venv
 
 if not defined PROMPT set PROMPT=$P$G
 
