@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign up</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;padding:0;min-height:100vh;background:radial-gradient(1200px 800px at 10% -10%,#0b122a 0%,rgba(2,6,23,0) 60%),radial-gradient(1200px 800px at 110% 10%,#0f1b44 0%,rgba(2,6,23,0) 50%),linear-gradient(120deg,#0b1020 0%,#0b122a 100%);overflow-x:hidden;width:100vw;max-width:100vw}
+    .wrap{width:100%;max-width:100vw;margin:0;padding:20px;display:flex;flex-direction:row;align-items:center;justify-content:center;min-height:100vh;gap:40px;box-sizing:border-box;overflow-x:hidden}
+    .left{position:relative;flex:1;max-width:400px;max-height:calc(100vh - 40px);overflow:hidden;box-sizing:border-box}
+    .bot{position:relative;background:linear-gradient(180deg,rgba(2,6,23,.75),rgba(2,6,23,.5));border:1px solid rgba(148,163,184,.18);border-radius:20px;padding:18px;box-shadow:0 24px 70px rgba(2,6,23,.65);backdrop-filter:blur(10px);width:100%;height:auto;box-sizing:border-box;overflow:hidden}
+    .bot img{width:100%;height:auto;display:block;border-radius:14px;mix-blend-mode:screen;filter:saturate(1.08) contrast(1.04) drop-shadow(0 12px 34px rgba(6,182,212,.25));object-fit:contain;max-width:100%;box-sizing:border-box}
+    .ring{position:absolute;border:2px solid rgba(99,102,241,.35);border-radius:999px}
+    .ring.r1{width:clamp(120px, 15vw, 180px);height:clamp(120px, 15vw, 180px);top:clamp(-15px, -2vw, -20px);left:clamp(-20px, -3vw, -30px)}
+    .ring.r2{width:clamp(180px, 20vw, 260px);height:clamp(180px, 20vw, 260px);bottom:clamp(-20px, -3vw, -30px);right:clamp(-25px, -4vw, -40px);border-color:rgba(14,165,233,.35)}
+    .bubble{position:absolute;background:#0ea5e9;color:#eaf6ff;border-radius:14px;padding:clamp(6px, 1vw, 10px) clamp(8px, 1.5vw, 12px);font-size:clamp(10px, 1.2vw, 12px);box-shadow:0 10px 30px rgba(14,165,233,.35);max-width:80px;word-wrap:break-word;overflow-wrap:break-word}
+    .bubble.small{background:#6366f1}
+    .bubble.b1{top:6%;left:8%}
+    .bubble.b2{top:22%;left:2%}
+    .bubble.b3{bottom:8%;right:6%}
+    .card{background:linear-gradient(180deg,rgba(2,6,23,.9),rgba(2,6,23,.6));border:1px solid rgba(148,163,184,.2);border-radius:16px;box-shadow:0 22px 60px rgba(2,6,23,.55);padding:32px;color:#e2e8f0;flex:1;max-width:460px;box-sizing:border-box;overflow-x:hidden}
+    .brand{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .brand-icon{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#6366f1,#06b6d4);color:#fff}
+    h1{margin:0 0 4px;font-size:22px}
+    .welcome{color:#e2e8f0}
+    .highlight{color:#60a5fa}
+    .sub{color:#a5b4fc;margin:0 0 16px}
+    .field{margin-bottom:12px}
+    label{display:block;margin:0 0 6px;color:#cbd5e1;font-weight:600;font-size:14px}
+    input{width:100%;padding:12px;border:2px solid rgba(148,163,184,.25);border-radius:8px;font-size:14px;outline:none;box-sizing:border-box;background:rgba(15,23,42,.6);color:#e2e8f0}
+    input:focus{border-color:#60a5fa}
+    .agree{display:flex;align-items:flex-start;gap:10px;margin:6px 0 4px;color:#94a3b8;font-size:12px}
+    .agree input{width:auto}
+    .btn{width:100%;padding:12px 16px;border:none;border-radius:10px;background:linear-gradient(135deg,#6366f1 0%,#3b82f6 60%,#06b6d4 120%);box-shadow:0 12px 30px rgba(6,182,212,.25);color:#fff;font-weight:800;letter-spacing:.02em;cursor:pointer;margin-top:10px}
+    .or{display:flex;align-items:center;gap:10px;color:#94a3b8;font-size:12px;margin:12px 0}
+    .or:before,.or:after{content:'';flex:1;height:1px;background:rgba(148,163,184,.25)}
+    .social{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .social button{border:1px solid rgba(148,163,184,.25);border-radius:10px;padding:10px 12px;background:rgba(15,23,42,.6);cursor:pointer;font-weight:700;color:#e5e7eb;display:flex;align-items:center;gap:8px}
+    .err{color:#ef4444;font-size:13px;margin:8px 0 0}
+    .link{margin-top:12px;font-size:13px;color:#6b7280;text-align:center}
+    .link a{color:#4f46e5;text-decoration:none}
+    .link a:hover{text-decoration:underline}
+    @media (max-width: 1024px){
+      .wrap{gap:30px;max-width:100vw;width:100vw;overflow-x:hidden}
+      .left{max-width:350px;max-height:calc(100vh - 30px)}
+    }
+    @media (max-width: 980px){
+      .wrap{flex-direction:column;gap:24px;justify-content:center;align-items:center;padding:20px;max-width:100vw;width:100vw;overflow-x:hidden}
+      .left{order:-1;margin-bottom:0;max-width:clamp(250px, 40vw, 350px);max-height:none;display:flex;justify-content:center}
+      .card{max-width:calc(100vw - 40px);width:calc(100vw - 40px);box-sizing:border-box;overflow-x:hidden}
+      .bot{padding:clamp(12px, 2vw, 18px)}
+    }
+    @media (max-width: 768px){
+      .wrap{padding:20px;gap:20px;justify-content:center;max-width:100vw;width:100vw;overflow-x:hidden}
+      .card{padding:24px;max-width:calc(100vw - 40px);width:calc(100vw - 40px);box-sizing:border-box;overflow-x:hidden}
+      .bot{padding:12px}
+      .left{max-width:clamp(200px, 35vw, 280px)}
+      h1{font-size:20px;word-wrap:break-word;overflow-wrap:break-word}
+      .sub{font-size:14px;word-wrap:break-word;overflow-wrap:break-word}
+      input{padding:12px;font-size:16px;box-sizing:border-box;width:100%;max-width:100%}
+      .btn{padding:12px 16px;box-sizing:border-box;width:100%;max-width:100%}
+      .agree{font-size:11px;word-wrap:break-word;overflow-wrap:break-word}
+    }
+    @media (max-width: 480px){
+      .wrap{padding:16px;gap:16px;justify-content:center;max-width:100vw;width:100vw;overflow-x:hidden}
+      .card{padding:20px;max-width:calc(100vw - 32px);width:calc(100vw - 32px);box-sizing:border-box;overflow-x:hidden}
+      .bot{padding:8px}
+      .left{max-width:clamp(150px, 30vw, 220px)}
+      .ring{display:none}
+      .bubble{display:none}
+      .brand{gap:8px}
+      .brand-icon{width:32px;height:32px}
+      h1{font-size:18px;word-wrap:break-word;overflow-wrap:break-word}
+      .sub{font-size:13px;word-wrap:break-word;overflow-wrap:break-word}
+      .field{margin-bottom:10px}
+      input{padding:10px;font-size:16px;box-sizing:border-box;width:100%;max-width:100%}
+      .btn{padding:10px 16px;font-size:14px;box-sizing:border-box;width:100%;max-width:100%}
+      .agree{font-size:10px;gap:8px;word-wrap:break-word;overflow-wrap:break-word}
+      .social{grid-template-columns:1fr;gap:8px;width:100%}
+      .social button{padding:8px 10px;font-size:13px;box-sizing:border-box;width:100%;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    }
+    @media (max-width: 360px){
+      .wrap{padding:12px;gap:12px;justify-content:center;max-width:100vw;width:100vw;overflow-x:hidden}
+      .card{padding:16px;max-width:calc(100vw - 24px);width:calc(100vw - 24px);box-sizing:border-box;overflow-x:hidden}
+      .left{max-width:clamp(120px, 25vw, 180px)}
+      .bot{padding:6px}
+      h1{font-size:16px;word-wrap:break-word;overflow-wrap:break-word}
+      .sub{font-size:12px;word-wrap:break-word;overflow-wrap:break-word}
+      input{padding:8px;font-size:16px;box-sizing:border-box;width:100%;max-width:100%}
+      .btn{padding:8px 16px;font-size:13px;box-sizing:border-box;width:100%;max-width:100%}
+    }
+    @media (max-width: 320px){
+      .wrap{padding:8px;gap:8px;justify-content:center;max-width:100vw;width:100vw;overflow-x:hidden}
+      .card{padding:12px;max-width:calc(100vw - 16px);width:calc(100vw - 16px);box-sizing:border-box;overflow-x:hidden}
+      .left{max-width:clamp(100px, 20vw, 160px)}
+      .bot{padding:4px}
+      h1{font-size:14px;word-wrap:break-word;overflow-wrap:break-word}
+      .sub{font-size:11px;word-wrap:break-word;overflow-wrap:break-word}
+      input{padding:6px;font-size:16px;box-sizing:border-box;width:100%;max-width:100%}
+      .btn{padding:6px 12px;font-size:12px;box-sizing:border-box;width:100%;max-width:100%}
+    }
+  </style>
+  <script>
+    async function doSignup(e){
+      e.preventDefault();
+      const username=document.getElementById('su').value.trim();
+      const email=document.getElementById('email').value.trim();
+      const password=document.getElementById('sp').value.trim();
+      const confirmPassword=document.getElementById('scp').value.trim();
+      const phone=document.getElementById('phone').value.trim();
+      const otp=document.getElementById('otp').value.trim();
+      const agree=document.getElementById('agree');
+      const err=document.getElementById('err');
+      const btn=document.getElementById('submit');
+      err.textContent='';
+      if(!username||!email||!password||!confirmPassword){err.textContent='Please fill in all fields';return}
+      if(!agree.checked){err.textContent='Please agree to Terms and Privacy Policy';return}
+      if(password!==confirmPassword){err.textContent='Passwords do not match';return}
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if(!emailRegex.test(email)){err.textContent='Please enter a valid email address';return}
+      btn.disabled=true;btn.textContent='Creating account...';
+      try{
+        const r=await fetch('/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,email,password,confirm_password:confirmPassword,phone,otp})});
+        const d=await r.json();
+        if(!d.success){err.textContent=d.message||'Signup failed';btn.disabled=false;btn.textContent='Create Account';return}
+        // Go to login
+        location.href='/login';
+      }catch(ex){err.textContent='Network error: '+ex.message;btn.disabled=false;btn.textContent='Create Account'}
+    }
+    async function sendOtp(){
+      const username=document.getElementById('su').value.trim();
+      const phone=document.getElementById('phone').value.trim();
+      const err=document.getElementById('err');
+      err.textContent='';
+      if(!username||!phone){ err.textContent='Enter username and phone number first'; return; }
+      const btn=document.getElementById('send-otp');
+      btn.disabled=true; btn.textContent='Sending...';
+      try{
+        const r=await fetch('/auth/send_otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,phone})});
+        const d=await r.json();
+        if(!d.success){ err.textContent=d.message||'Failed to send OTP'; }
+        else { err.textContent='OTP sent to your phone'; err.style.color='#22c55e'; setTimeout(()=>{err.textContent=''; err.style.color='';}, 3000); }
+      }catch(ex){ err.textContent='Network error: '+ex.message; }
+      finally{ btn.disabled=false; btn.textContent='Send OTP'; }
+    }
+    function loginGoogle(){ window.location.href='/auth/google'; }
+    function loginFacebook(){ window.location.href='/auth/facebook'; }
+  </script>
+  </head>
+<body>
+  <div class="wrap">
+    <div class="left">
+      <span class="ring r1"></span>
+      <span class="ring r2"></span>
+      <div class="bot">
+        <img src="/assets/robot.png" alt="Robot" />
+      </div>
+      <div class="bubble b1 small">Hello, can you help me?</div>
+      <div class="bubble b2">Buddy! 👋</div>
+      <div class="bubble b3">Sure, Buddy is ready to help you!</div>
+    </div>
+    <div class="card">
+      <div class="brand">
+        <div class="brand-icon">🤖</div>
+        <div>
+          <div class="welcome">Welcome to <b>Sign Up <span class="highlight">Buddy!</span></b></div>
+          <div class="sub">Create your account to continue</div>
+        </div>
+      </div>
+      <form onsubmit="doSignup(event)">
+        <div class="field">
+          <label>Username</label>
+          <input id="su" placeholder="Your username" />
+        </div>
+        <div class="field">
+          <label>Phone (for SMS OTP)</label>
+          <input id="phone" placeholder="+91XXXXXXXXXX" />
+        </div>
+        <div class="field" style="display:flex; gap:8px; align-items:center;">
+          <div style="flex:1">
+            <label>OTP</label>
+            <input id="otp" placeholder="6-digit code" />
+          </div>
+          <button type="button" id="send-otp" class="btn" style="width:auto; min-width:120px; margin-top:22px" onclick="sendOtp()">Send OTP</button>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input id="email" type="email" placeholder="you@example.com" />
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input id="sp" type="password" placeholder="••••••••" />
+        </div>
+        <div class="field">
+          <label>Confirm Password</label>
+          <input id="scp" type="password" placeholder="••••••••" />
+        </div>
+        <label class="agree"><input id="agree" type="checkbox" /> I agree to <a href="#" style="color:#2563eb;text-decoration:none;margin:0 4px">Terms & Conditions</a> and <a href="#" style="color:#2563eb;text-decoration:none;margin:0 4px">Privacy Policy</a>.</label>
+        <button id="submit" class="btn" type="submit">Sign Up</button>
+        <div id="err" class="err"></div>
+        <div class="link">Already have an account? <a href="/login">Sign in</a></div>
+      </form>
+      <div class="or">or continue with</div>
+      <div class="social">
+        <button type="button" onclick="loginGoogle()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21.35 11.1h-9.18v2.96h5.3c-.23 1.5-1.6 4.4-5.3 4.4-3.19 0-5.8-2.64-5.8-5.9s2.6-5.9 5.8-5.9c1.82 0 3.04.77 3.74 1.44l2.55-2.46C17.4 4.2 15.07 3 12.17 3 6.97 3 2.8 7.18 2.8 12.36c0 5.18 4.17 9.36 9.37 9.36 5.4 0 8.97-3.8 8.97-9.16 0-.62-.07-1.08-.18-1.46z" fill="#e5e7eb"/></svg> Google</button>
+        <button type="button" onclick="loginFacebook()"><svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2"><path d="M22.675 0h-21.35C.595 0 0 .594 0 1.326v21.348C0 23.406.595 24 1.325 24h11.495v-9.294H9.691V11.01h3.129V8.41c0-3.1 1.894-4.788 4.659-4.788 1.325 0 2.463.099 2.794.143v3.24l-1.918.001c-1.504 0-1.796.715-1.796 1.763v2.313h3.587l-.467 3.696h-3.12V24h6.116C23.406 24 24 23.406 24 22.674V1.326C24 .594 23.406 0 22.675 0z"/></svg> Facebook</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
+

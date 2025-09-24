@@ -1,0 +1,70 @@
+{
+    "company_info": {
+        "name": "Your Company Name",
+        "type": "Your Business Type",
+        "founded": "2020",
+        "location": "Your City, Country",
+        "team_size": "10+",
+        "offices": [
+            "Main Office",
+            "Branch Office"
+        ]
+    },
+    "services": {
+        "online_services": [
+            "Web Development",
+            "Digital Marketing",
+            "SEO Services",
+            "Social Media Management",
+            "E-commerce Solutions",
+            "Mobile App Development",
+            "Content Creation",
+            "Email Marketing"
+        ],
+        "offline_services": [
+            "Consulting",
+            "Training",
+            "Support Services",
+            "Custom Solutions"
+        ]
+    },
+    "common_questions": {
+        "what are your services": "We offer a comprehensive range of services including web development, digital marketing, SEO, social media management, and custom solutions. Would you like to know more about any specific service?",
+        "where are you located": "We are headquartered in Your City, Country with offices in Main Office and Branch Office.",
+        "how can i contact you": "You can reach us through our website contact form, email, or phone. I'd be happy to help you get in touch with the right department.",
+        "what is your pricing": "Our pricing varies depending on the project scope and requirements. I can connect you with our sales team for a detailed quote.",
+        "do you offer support": "Yes, we provide comprehensive support for all our services. Our support team is available to help you with any questions or issues."
+    },
+    "contact": {
+        "email": "info@yourcompany.com",
+        "phone": "+1-234-567-8900",
+        "website": "https://yourcompany.com",
+        "address": "123 Business Street, Your City, Country 12345"
+    },
+    "business_hours": {
+        "monday": "9:00 AM - 6:00 PM",
+        "tuesday": "9:00 AM - 6:00 PM",
+        "wednesday": "9:00 AM - 6:00 PM",
+        "thursday": "9:00 AM - 6:00 PM",
+        "friday": "9:00 AM - 6:00 PM",
+        "saturday": "10:00 AM - 4:00 PM",
+        "sunday": "Closed"
+    },
+    "specializations": [
+        "Small Business Solutions",
+        "Enterprise Applications",
+        "E-commerce Platforms",
+        "Digital Transformation",
+        "Cloud Services"
+    ],
+    "certifications": [
+        "ISO 9001:2015",
+        "Google Partner",
+        "Microsoft Certified Partner"
+    ],
+    "testimonials": [
+        "Excellent service and support!",
+        "Professional team with great results.",
+        "Highly recommended for digital solutions."
+    ]
+}

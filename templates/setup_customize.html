@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customize Widget</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;display:flex;min-height:100vh;align-items:center;justify-content:center;background:radial-gradient(1200px 800px at 10% -10%,#0b122a 0%,rgba(2,6,23,0) 60%),radial-gradient(1200px 800px at 110% 10%,#0f1b44 0%,rgba(2,6,23,0) 50%),linear-gradient(120deg,#0b1020 0%,#0b122a 100%);color:#e2e8f0}
+    .wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;max-width:800px;padding:20px;min-height:100vh}
+    .card{background:linear-gradient(180deg,rgba(2,6,23,.75),rgba(2,6,23,.45));border:1px solid transparent;border-radius:16px;box-shadow:0 16px 50px rgba(2,6,23,.5);padding:32px;color:#e2e8f0;backdrop-filter:blur(8px);width:100%;max-width:600px}
+    h2{margin:0 0 16px;text-align:center;font-size:28px}
+    .btn{padding:12px 20px;border:2px solid rgba(148,163,184,.25);border-radius:10px;background:rgba(15,23,42,.6);color:#e2e8f0;cursor:pointer;font-size:14px;min-height:44px;display:flex;align-items:center;justify-content:center}
+    .primary{background:linear-gradient(135deg,#6366f1 0%,#3b82f6 60%,#06b6d4 120%);border:none;box-shadow:0 12px 30px rgba(6,182,212,.25);color:#fff}
+    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:20px}
+    pre{margin:0;background:#0b1220;color:#e5e7eb;padding:20px;border-radius:10px;border:1px solid rgba(148,163,184,.25);white-space:pre-wrap;word-wrap:break-word;font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+    
+    /* Mobile-specific styles */
+    @media (max-width: 768px) {
+      body{padding:16px;align-items:center;justify-content:center;min-height:100vh}
+      .wrap{padding:16px;max-width:100%;min-height:auto}
+      .card{padding:24px;border-radius:12px;max-width:100%}
+      h2{font-size:24px;margin-bottom:16px;text-align:center}
+      .btn{padding:12px 16px;font-size:16px;min-height:48px;flex:1;min-width:120px}
+      .row{gap:12px;justify-content:center;margin-top:24px}
+      pre{padding:16px;font-size:12px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;overflow-wrap:anywhere}
+      p{font-size:14px;line-height:1.5;margin-bottom:20px;text-align:center}
+    }
+    
+    @media (max-width: 480px) {
+      body{padding:12px}
+      .wrap{padding:12px;max-width:100%}
+      .card{padding:20px;border-radius:8px;max-width:100%}
+      h2{font-size:20px;margin-bottom:12px}
+      .btn{padding:10px 16px;font-size:14px;min-height:44px}
+      pre{padding:12px;font-size:11px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word;overflow-wrap:anywhere}
+      .row{flex-direction:column;gap:12px;width:100%}
+      .row .btn{width:100%;min-width:unset}
+      p{font-size:13px;margin-bottom:16px}
+    }
+    
+    /* Copy button for script tag */
+    .copy-btn{position:relative;background:rgba(15,23,42,.8);border:1px solid rgba(148,163,184,.3);color:#e2e8f0;padding:8px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-top:8px;display:inline-block}
+    .copy-btn:hover{background:rgba(15,23,42,1);border-color:rgba(148,163,184,.5)}
+    .copy-btn.copied{background:rgba(34,197,94,.2);border-color:rgba(34,197,94,.5);color:#22c55e}
+  </style>
+  <style>
+    /* Light theme overrides for customize page */
+    body.light .card{ background:#ffffff; border:1px solid rgba(0,0,0,.12); color:#0f172a; }
+    body.light .btn{ border-color: rgba(0,0,0,.12); background:#ffffff; color:#0f172a; }
+    body.light pre{ background:#ffffff; color:#0f172a; border-color: rgba(0,0,0,.12); }
+    body.light .primary{ box-shadow:0 12px 30px rgba(79,70,229,.15); }
+    body.light p{ color:#0f172a; }
+  </style>
+  <script>
+    (function(){
+      try{
+        var theme = localStorage.getItem('dash_theme') || 'dark';
+        if(theme === 'light'){
+          document.addEventListener('DOMContentLoaded', function(){ document.body.classList.add('light'); });
+        }
+      }catch(_){ }
+    })();
+  </script>
+  <script>
+    function ensureAuth(){
+      const t=localStorage.getItem('token');
+      if(!t){ location.href='/login'; return false; }
+      return true;
+    }
+    function next(){
+      if(!ensureAuth()) return;
+      var t = localStorage.getItem('token') || '';
+      if(!t){ location.href='/login'; return; }
+      location.href = '/dashboard?token=' + encodeURIComponent(t);
+    }
+    function copyScript(){
+      const code = document.getElementById('embed');
+      const text = code.textContent;
+      const copyBtn = document.getElementById('copyBtn');
+      
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(function() {
+          copyBtn.textContent = 'Copied!';
+          copyBtn.classList.add('copied');
+          setTimeout(function() {
+            copyBtn.textContent = 'Copy Script';
+            copyBtn.classList.remove('copied');
+          }, 2000);
+        }).catch(function() {
+          fallbackCopy(text, copyBtn);
+        });
+      } else {
+        fallbackCopy(text, copyBtn);
+      }
+    }
+    function fallbackCopy(text, copyBtn) {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        document.execCommand('copy');
+        copyBtn.textContent = 'Copied!';
+        copyBtn.classList.add('copied');
+        setTimeout(function() {
+          copyBtn.textContent = 'Copy Script';
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      } catch (err) {
+        console.error('Failed to copy: ', err);
+        copyBtn.textContent = 'Copy Failed';
+        setTimeout(function() {
+          copyBtn.textContent = 'Copy Script';
+        }, 2000);
+      }
+      
+      document.body.removeChild(textArea);
+    }
+  </script>
+</head>
+<body onload="ensureAuth()">
+  <div class="wrap">
+    <div class="card">
+      <h2>Embed Script</h2>
+      <p style="color:#94a3b8;text-align:center;margin-bottom:24px;">Copy and paste this into your website just before &lt;/body&gt;:</p>
+      <div style="position:relative;text-align:center">
+        <pre><code id="embed">&lt;script src="http://localhost:5001/static/chatbot-widget.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  ChatbotWidget.updateConfig({
+    apiUrl: 'http://localhost:5001',
+    username: 'user',
+    primaryColor: '#4f46e5',
+    secondaryColor: '#7c3aed'
+  });
+&lt;/script&gt;</code></pre>
+        <button class="copy-btn" onclick="copyScript()" id="copyBtn">Copy Script</button>
+      </div>
+      <script>
+        (function(){
+          try{
+            var u = localStorage.getItem('username') || 'user';
+            var code = document.getElementById('embed');
+            if(code){
+              var safeU = u.replace(/'/g, "\\'");
+              var snippet = ''
+                + '<scr' + 'ipt src="http://localhost:5001/static/chatbot-widget.js"></scr' + 'ipt>\n'
+                + '<scr' + 'ipt>\n'
+                + "  ChatbotWidget.updateConfig({\n"
+                + "    apiUrl: 'http://localhost:5001',\n"
+                + "    username: '" + safeU + "',\n"
+                + "    primaryColor: '#4f46e5',\n"
+                + "    secondaryColor: '#7c3aed'\n"
+                + "  });\n"
+                + '</scr' + 'ipt>';
+              code.textContent = snippet;
+            }
+          }catch(e){}
+        })();
+      </script>
+      <div class="row" style="margin-top:12px;justify-content:flex-end">
+        <button class="btn" onclick="location.href='/knowledgebase'">Back</button>
+        <button class="btn primary" onclick="next()">Finish & Go to Dashboard</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
+
